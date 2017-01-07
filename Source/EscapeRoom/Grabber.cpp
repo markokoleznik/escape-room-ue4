@@ -42,10 +42,29 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
     
     
     FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-    
+    // Draw a red trace
     DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor::Red, false, 0.f, 0.f, 10.f);
     
-    // Draw a red trace
+    /// Set up query parameters
+    FCollisionQueryParams TraceParameters = (FName(TEXT("")), false, GetOwner());
+    
+    FHitResult FHit;
+    FVector Start;
+    FVector End;
+    FCollisionObjectQueryParams ObjectQueryParams;
+    // Line Trace (AKA ray-cast)
+    GetWorld()->LineTraceSingleByObjectType(OUT FHit,
+                                             PlayerViewPointLocation,
+                                             LineTraceEnd,
+                                             ECollisionChannel::ECC_PhysicsBody,
+                                             TraceParameters
+                                             );
+    
+    if (AActor * ActorHit = FHit.GetActor())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *ActorHit->GetName());
+    }
+    
     
     
 }
