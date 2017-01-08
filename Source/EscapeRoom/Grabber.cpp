@@ -54,12 +54,25 @@ void UGrabber::BeginPlay()
 void UGrabber::Release()
 {
     UE_LOG(LogTemp, Warning, TEXT("Grab Released"))
+    
+    PhysicsHandle->ReleaseComponent();
 }
 
 void UGrabber::Grab()
 {
     UE_LOG(LogTemp, Warning, TEXT("Grab Pressed"))
-    GetFirstPhysicsBodyInReach();
+    auto HitResult = GetFirstPhysicsBodyInReach();
+    
+    auto ComponentToGrab = HitResult.GetComponent();
+    
+    auto ActorHit = HitResult.GetActor();
+    
+    if (ActorHit)
+    {
+        PhysicsHandle->GrabComponentAtLocationWithRotation(ComponentToGrab, NAME_None, ComponentToGrab->GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+    }
+    
+    
 }
 
 
@@ -67,6 +80,39 @@ void UGrabber::Grab()
 void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+    
+    FVector PlayerViewPointLocation;
+    FRotator PlayerViewPointRotation;
+    
+    GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+                                                               OUT PlayerViewPointLocation,
+                                                               OUT PlayerViewPointRotation);
+    //    UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotations: %s"), *PlayerViewPointLocation.ToString(), *PlayerViewPointRotation.ToString())
+    
+    
+    FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+    // Draw a red trace
+//    DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor::Red, false, 0.f, 0.f, 10.f);
+    
+    /// Set up query parameters
+    FCollisionQueryParams TraceParameters = (FName(TEXT("")), false, GetOwner());
+    
+    
+    FHitResult FHit;
+    FVector Start;
+    FVector End;
+    FCollisionObjectQueryParams ObjectQueryParams;
+    // Line Trace (AKA ray-cast)
+    GetWorld()->LineTraceSingleByObjectType(OUT FHit,
+                                            PlayerViewPointLocation,
+                                            LineTraceEnd,
+                                            ECollisionChannel::ECC_PhysicsBody,
+                                            TraceParameters
+                                            );
+    if (PhysicsHandle->GrabbedComponent)
+    {
+        PhysicsHandle->SetTargetLocation(LineTraceEnd);
+    }
     
     
 }
@@ -88,6 +134,7 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
     
     /// Set up query parameters
     FCollisionQueryParams TraceParameters = (FName(TEXT("")), false, GetOwner());
+    
     
     FHitResult FHit;
     FVector Start;
