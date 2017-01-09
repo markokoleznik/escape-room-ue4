@@ -47,8 +47,10 @@ void UOpenDoor::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompo
 
 void UOpenDoor::OpenDoor()
 {
-    FRotator Rotator = FRotator(0.0f, OpenAngle, 0.0f);
-    Owner->SetActorRotation(Rotator);
+//    FRotator Rotator = FRotator(0.0f, OpenAngle, 0.0f);
+//    Owner->SetActorRotation(Rotator);
+    OnOpenRequest.Broadcast();
+//    UE_LOG(LogTemp, Warning, TEXT("Broadcast to open door sent!"));
 }
 
 void UOpenDoor::CloseDoor()
