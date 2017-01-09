@@ -33,31 +33,15 @@ void UOpenDoor::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompo
 	// ...
     if (GetTotalMassOfActorsOnPlate() > MassTresholdForPressurePlate)
     {
-        OpenDoor();
-        LastOpenDoorTime = GetWorld()->GetTimeSeconds();
+        OnOpen.Broadcast();
     }
-    
-    // Check if it is time to close the door
-    if (GetWorld()->GetTimeSeconds() - LastOpenDoorTime > DoorCloseDelay)
+    else
     {
-        CloseDoor();
+        OnClose.Broadcast();
     }
     
 }
 
-void UOpenDoor::OpenDoor()
-{
-//    FRotator Rotator = FRotator(0.0f, OpenAngle, 0.0f);
-//    Owner->SetActorRotation(Rotator);
-    OnOpenRequest.Broadcast();
-//    UE_LOG(LogTemp, Warning, TEXT("Broadcast to open door sent!"));
-}
-
-void UOpenDoor::CloseDoor()
-{
-    FRotator Rotator = FRotator(0.0f, 180.0f, 0.0f);
-    Owner->SetActorRotation(Rotator);
-}
 
 float UOpenDoor::GetTotalMassOfActorsOnPlate()
 {
